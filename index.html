@@ -8,12 +8,17 @@
       // Verifica se o navegador suporta WebXR
       if (navigator.xr) {
         console.log("WebXR é suportado!");
-        
+
         // Tentando acessar a câmera via WebXR
         navigator.xr.requestDevice()
           .then((device) => {
             // Tentando iniciar uma sessão de AR com a câmera
-            device.requestSession({ immersive: true, environment: "ar" })
+            device.requestSession({
+              immersive: true,
+              environment: "ar",
+              outputContext: document.querySelector('#unity-canvas').getContext('webgl'),
+              referenceSpaceType: 'local'
+            })
               .then((session) => {
                 console.log("Sessão AR iniciada!");
 
