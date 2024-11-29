@@ -4,9 +4,33 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | Fenasoja - AR</title>
+    <script>
+      // Verifica se o navegador suporta WebXR
+      if (navigator.xr) {
+        // Tentando acessar a API WebXR para AR
+        navigator.xr.requestDevice()
+          .then((device) => {
+            // Solicitando uma sessão AR
+            device.requestSession({ immersive: true, environment: "ar" })
+              .then((session) => {
+                console.log("Sessão AR iniciada!");
+                // Aqui você pode adicionar mais interações com a Unity via WebXR
+              })
+              .catch((error) => {
+                console.error("Erro ao acessar WebXR:", error);
+              });
+          })
+          .catch((error) => {
+            console.error("Erro ao acessar o dispositivo WebXR:", error);
+          });
+      } else {
+        console.log("WebXR não suportado no navegador.");
+      }
+    </script>
   </head>
   <body style="text-align: center; padding: 0; border: 0; margin: 0;">
     <canvas id="unity-canvas" width=960 height=600 tabindex="-1" style="width: 960px; height: 600px; background: #231F20"></canvas>
+
     <script src="Build/FenasojaWEBGL.loader.js"></script>
     <script>
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
@@ -24,6 +48,7 @@
         document.body.style.textAlign = "left";
       }
 
+      // Inicia a instância Unity WebGL
       createUnityInstance(document.querySelector("#unity-canvas"), {
         dataUrl: "Build/FenasojaWEBGL.data",
         frameworkUrl: "Build/FenasojaWEBGL.framework.js",
