@@ -7,17 +7,25 @@
     <script>
       // Verifica se o navegador suporta WebXR
       if (navigator.xr) {
-        // Tentando acessar a API WebXR para AR
+        console.log("WebXR é suportado!");
+        
+        // Tentando acessar a câmera via WebXR
         navigator.xr.requestDevice()
           .then((device) => {
-            // Solicitando uma sessão AR
+            // Tentando iniciar uma sessão de AR com a câmera
             device.requestSession({ immersive: true, environment: "ar" })
               .then((session) => {
                 console.log("Sessão AR iniciada!");
-                // Aqui você pode adicionar mais interações com a Unity via WebXR
+
+                // Associando a sessão AR à Unity
+                session.addEventListener('end', () => {
+                  console.log("Sessão AR finalizada.");
+                });
+
+                // Aqui você pode fazer mais configurações de AR se necessário
               })
               .catch((error) => {
-                console.error("Erro ao acessar WebXR:", error);
+                console.error("Erro ao solicitar sessão AR:", error);
               });
           })
           .catch((error) => {
@@ -34,7 +42,7 @@
     <script src="Build/FenasojaWEBGL.loader.js"></script>
     <script>
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
+        // Estilo para dispositivos móveis: Preenche toda a área do navegador com o canvas
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
