@@ -4,75 +4,91 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | Fenasoja - AR</title>
-    <script>
-      // Verifica se o navegador suporta WebXR
-      if (navigator.xr) {
-        console.log("WebXR é suportado!");
-
-        // Tentando acessar a câmera via WebXR
-        navigator.xr.requestDevice()
-          .then((device) => {
-            // Tentando iniciar uma sessão de AR com a câmera
-            device.requestSession({
-              immersive: true,
-              environment: "ar",
-              outputContext: document.querySelector('#unity-canvas').getContext('webgl'),
-              referenceSpaceType: 'local'
-            })
-              .then((session) => {
-                console.log("Sessão AR iniciada!");
-
-                // Associando a sessão AR à Unity
-                session.addEventListener('end', () => {
-                  console.log("Sessão AR finalizada.");
-                });
-
-                // Aqui você pode fazer mais configurações de AR se necessário
-              })
-              .catch((error) => {
-                console.error("Erro ao solicitar sessão AR:", error);
-              });
-          })
-          .catch((error) => {
-            console.error("Erro ao acessar o dispositivo WebXR:", error);
-          });
-      } else {
-        console.log("WebXR não suportado no navegador.");
-      }
-    </script>
+    <meta name="description" content="">
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
   </head>
-  <body style="text-align: center; padding: 0; border: 0; margin: 0;">
-    <canvas id="unity-canvas" width=960 height=600 tabindex="-1" style="width: 960px; height: 600px; background: #231F20"></canvas>
-
-    <script src="Build/FenasojaWEBGL.loader.js"></script>
+  <body>
+    <div id="unity-container">
+      <div id="unity-canvas-container">
+        <canvas id="unity-canvas" style="width: 100%; height: 100%;"></canvas>
+      </div>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <button id="entervr" value="Enter VR" disabled>VR</button>
+        <button id="enterar" value="Enter AR" disabled>AR</button>
+        <div id="unity-webxr-link">Using <a href="https://github.com/De-Panther/unity-webxr-export" target="_blank" title="WebXR Export">WebXR Export</a></div>
+        <div id="unity-build-title">Fenasoja - AR</div>
+      </div>
+    </div>
     <script>
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Estilo para dispositivos móveis: Preenche toda a área do navegador com o canvas
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-
-        var canvas = document.querySelector("#unity-canvas");
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-        canvas.style.position = "fixed";
-
-        document.body.style.textAlign = "left";
-      }
-
-      // Inicia a instância Unity WebGL
-      createUnityInstance(document.querySelector("#unity-canvas"), {
-        dataUrl: "Build/FenasojaWEBGL.data",
-        frameworkUrl: "Build/FenasojaWEBGL.framework.js",
-        codeUrl: "Build/FenasojaWEBGL.wasm",
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/FenasojaWEBGL.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/FenasojaWEBGL.data",
+        frameworkUrl: buildUrl + "/FenasojaWEBGL.framework.js",
+        codeUrl: buildUrl + "/FenasojaWEBGL.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Play2Make",
         productName: "Fenasoja - AR",
         productVersion: "1.0.0",
-        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
-      });
+      };
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var canvasContainer = document.querySelector("#unity-canvas-container");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var unityInstance = null;
+      
+
+      canvasContainer.style.width = "960px";
+      canvasContainer.style.height = "600px";
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((instance) => {
+          unityInstance = instance;
+          loadingBar.style.display = "none";
+          if (fullscreenButton)
+          {
+            fullscreenButton.onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+          }
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+
+      let enterARButton = document.getElementById('enterar');
+      let enterVRButton = document.getElementById('entervr');
+
+      document.addEventListener('onARSupportedCheck', function (event) {
+        enterARButton.disabled = !event.detail.supported;
+      }, false);
+      document.addEventListener('onVRSupportedCheck', function (event) {
+        enterVRButton.disabled = !event.detail.supported;
+      }, false);
+
+      enterARButton.addEventListener('click', function (event) {
+        unityInstance.Module.WebXR.toggleAR();
+      }, false);
+      enterVRButton.addEventListener('click', function (event) {
+        unityInstance.Module.WebXR.toggleVR();
+      }, false);
     </script>
   </body>
 </html>
